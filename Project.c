@@ -46,7 +46,32 @@ void get_user_details()
         }
     }
 }
+void get_admin_details()
+{
+    char employee_id[50], password[20], confirm_password[20];
+    bool check_pw_flag;
+    printf("Enter your employee ID: ");
+    scanf("%s", employee_id);
 
+    while (check_pw_flag == false)
+    {
+        printf("Create a password: ");
+        scanf("%s", password);
+
+        printf("Confirm your password: ");
+        scanf("%s", confirm_password);
+
+        if (strcmp(password, confirm_password) == 0)
+        {
+            printf("Passwords match\n");
+            check_pw_flag = true;
+        }
+        else
+        {
+            printf("Passwords don't match\n");
+        }
+    }
+}
 void create_user_account()
 {
     int acc_choice;
@@ -74,6 +99,24 @@ void create_user_account()
         }
     }
 }
+void user_login()
+{
+    char First_Name[50], Last_Name[50], password[20];
+    printf("Enter your first name: ");
+    scanf("%s", First_Name);
+    printf("Enter your last name: ");
+    scanf("%s", Last_Name);
+    printf("Enter your password: ");
+    scanf("%s", password);
+}
+void admin_login()
+{
+    char employee_id[50], password[20];
+    printf("Enter your employee ID: ");
+    scanf("%s", employee_id);
+    printf("Enter your password: ");
+    scanf("%s", password);
+}
 
 int main(void)
 {
@@ -94,12 +137,15 @@ int main(void)
             break;
         case 2:
             flag = true;
+            get_admin_details();
             break;
         case 3:
             flag = true;
+            user_login();
             break;
         case 4:
             flag = true;
+            admin_login();
             break;
         case 5:
             printf("Exited\n");
