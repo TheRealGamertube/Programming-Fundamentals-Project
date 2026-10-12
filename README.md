@@ -2,7 +2,7 @@
 
 A secure, console-based **Bank Account Management System** written in **C**. It supports separate **user** and **admin** logins, PIN-protected accounts, transaction logging with timestamps, savings interest, and **encrypted file storage** so personal data is never saved as plain text.
 
-Built as a group project by **Sarim (Group Leader)**, **Rayyan** and **Zain**.
+Built as a group project by **Zain (Group Leader)**, **Rayyan** and **Sarim**.
 
 📋 **Project board:** [Trello – Bank Account Management System](https://trello.com/b/FAOHUCAM/bank-account-management-system-%F0%9F%8F%A6)
 
@@ -164,8 +164,8 @@ We test edge cases including:
 
 | Name | Role |
 |------|------|
-| **Sarim** | Group Leader |
-| **Rayyan** | Developer |
+| **Zain** | Group Leader |
+| **Sarim** | Developer |
 | **Zain** | Developer |
 
 Tasks are split among team members on the Trello board.
