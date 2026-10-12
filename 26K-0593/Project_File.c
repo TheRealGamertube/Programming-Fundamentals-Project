@@ -1,45 +1,69 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <time.h>
 
 int main(void)
-//vigenere cipher encryption
+// vigenere cipher encryption
 {
     char word[50];
     char key[50];
-    char enc_text[] = "";
+    char salt[17];
+    char result[100];
     int key_counter = 0; // counter for the current character of key
-    int ascii_char, sum;
-    char enc_char, dec_char;
+    int ascii_char, sum, salt_char;
+    unsigned char enc_char;
 
-    printf("Enter a string to be encrypted (char only): ");
+    srand((unsigned int)time(NULL));
+
+    printf("Enter a string to be encrypted: ");
     fgets(word, sizeof(word), stdin);
-    printf("Enter a key for encryption (char only): ");
+    printf("Enter a key for encryption: ");
     fgets(key, sizeof(key), stdin);
 
-    for (int i = 0; i < strlen(word) - 1; i++)
+    for (int j = 0; j <= 15; j++)
     {
-        ascii_char = toupper((int)word[i]);
-        if (ascii_char != ' ')
+        salt_char = rand() % 26 + 'a';
+        salt[j] = salt_char;
+    }
+    salt[16] = '\0';
+
+    salt[strcspn(salt, "\n")] = '\0'; // removing any newline characters
+    word[strcspn(word, "\n")] = '\0';
+
+    strcpy(result, salt);
+    strcat(result, word);
+    strcat(result, salt);
+
+    printf("%s", result);
+    printf("\n");
+
+    unsigned char enc_text[strlen(result) + 1];
+
+    for (int i = 0; i < strlen(result); i++)
+    {
+        ascii_char = (unsigned char)result[i]; // no toupper, no - 65
+        if (key_counter < strlen(key) - 2)
         {
-            if (key_counter < strlen(key) - 2) //-2 because strlen returns 4 (4 because an extra character of \n stored and strlen starts from 1 not 0)
-            {
-                sum = (((int)key[key_counter] - 97) + (ascii_char - 65));
-                enc_char = (sum % 26) + 65;
-                key_counter = key_counter + 1;
-            }
-            else
-            {
-                sum = (((int)key[key_counter] - 97) + (ascii_char - 65));
-                enc_char = (sum % 26) + 65;
-                key_counter = key_counter + 1;
-                key_counter = 0;
-            }
-            printf("%c", enc_char);
+            sum = (unsigned char)key[key_counter] + ascii_char; // no - 97
+            enc_char = sum % 256;                               // no + 65
+            key_counter = key_counter + 1;
+            enc_text[i] = enc_char;
         }
         else
         {
-            printf(" ");
+            sum = (unsigned char)key[key_counter] + ascii_char;
+            enc_char = sum % 256;
+            key_counter = 0;
+            enc_text[i] = enc_char;
         }
     }
+
+    for (int i = 0; i < strlen(result); i++) // print as hex
+    {
+        printf("%02X", enc_text[i]);
+    }
+    printf("\n");
+    return 0;
 }
