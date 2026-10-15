@@ -38,6 +38,15 @@ void get_user_details()
             {
                 printf("Passwords match\n");
                 check_pw_flag = true;
+                FILE *fptr;
+                fptr = fopen("User_Details.txt", "a");
+                if (fptr != NULL)
+                {
+                    printf("The file is opened");
+                    // put encryption here
+                    fprintf(fptr, "%s\n%s\n%i\n%s\n", first_name, last_name, age, password);
+                    fclose(fptr);
+                }
             }
             else
             {
@@ -65,6 +74,15 @@ void get_admin_details()
         {
             printf("Passwords match\n");
             check_pw_flag = true;
+            FILE *fptr;
+            fptr = fopen("Admin_Details.txt", "a");
+            if (fptr != NULL)
+            {
+                printf("The file is opened");
+                // put encryption here
+                fprintf(fptr, "%s\n%s\n", employee_id, password);
+                fclose(fptr);
+            }
         }
         else
         {
@@ -108,6 +126,34 @@ void user_login()
     scanf("%s", Last_Name);
     printf("Enter your password: ");
     scanf("%s", password);
+
+    FILE *fptr;
+    fptr = fopen("User_Details.txt", "r");
+    if (fptr != NULL)
+    {
+        printf("File is opened\n");
+        char buf[100];
+        bool fName_flag = false, lName_flag = false, pass_flag = false;
+        while (fgets(buf, sizeof(buf), fptr) != NULL)
+        {
+            buf[strcspn(buf, "\n")] = '\0';
+            if (strcmp(First_Name, buf) == 0)
+                fName_flag = true;
+            if (strcmp(Last_Name, buf) == 0)
+                lName_flag = true;
+            if (strcmp(password, buf) == 0)
+                pass_flag = true;
+        }
+        if (fName_flag && lName_flag && pass_flag)
+        {
+            printf("Login Successful\n");
+        }
+        else
+        {
+            printf("Login failed\n");
+        }
+    }
+    fclose(fptr);
 }
 void admin_login()
 {
@@ -116,6 +162,31 @@ void admin_login()
     scanf("%s", employee_id);
     printf("Enter your password: ");
     scanf("%s", password);
+    FILE *fptr;
+    fptr = fopen("Admin_Details.txt", "r");
+    if (fptr != NULL)
+    {
+        printf("File is opened\n");
+        char buf[100];
+        bool Id_flag = false, pass_flag = false;
+        while (fgets(buf, sizeof(buf), fptr) != NULL)
+        {
+            buf[strcspn(buf, "\n")] = '\0';
+            if (strcmp(employee_id, buf) == 0)
+                Id_flag = true;
+            if (strcmp(password, buf) == 0)
+                pass_flag = true;
+        }
+        if (Id_flag && pass_flag)
+        {
+            printf("Login Successful\n");
+        }
+        else
+        {
+            printf("Login failed\n");
+        }
+    }
+    fclose(fptr);
 }
 
 int main(void)
