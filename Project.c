@@ -2,13 +2,11 @@
 #include <stdbool.h>
 #include <string.h>
 
-// Checks whether 'key' already exists as the first line of any record.
-// lines_per_record: 5 for User_Details.txt, 2 for Admin_Details.txt
 bool record_exists(const char *filename, int lines_per_record, const char *key)
 {
     FILE *fptr = fopen(filename, "r");
     if (fptr == NULL)
-        return false; // file doesn't exist yet, so nothing is taken
+        return false;
 
     char line[100];
     int line_no = 0;
@@ -55,7 +53,6 @@ void get_user_details()
     }
     else
     {
-        // keep asking until the username is unused
         while (true)
         {
             printf("Choose a username: ");
@@ -112,7 +109,7 @@ void get_admin_details()
     char employee_id[50], password[20], confirm_password[20];
     bool check_pw_flag = false;
 
-    // keep asking until the ID is unused
+    
     while (true)
     {
         printf("Enter your employee ID: ");
