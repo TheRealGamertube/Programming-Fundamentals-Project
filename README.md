@@ -19,7 +19,6 @@ Built as a group project by **Zain (Group Leader)**, **Rayyan** and **Sarim**.
 - [Usage](#-usage)
 - [Testing](#-testing)
 - [Team](#-team)
-- [License](#-license)
 
 ---
 
@@ -169,12 +168,6 @@ We test edge cases including:
 | **Zain** | Developer |
 
 Tasks are split among team members on the Trello board.
-
----
-
-## 📄 License
-
-This project was created for educational purposes. Add a `LICENSE` file (e.g. MIT) if you want to formalize usage.
 
 ---
 
