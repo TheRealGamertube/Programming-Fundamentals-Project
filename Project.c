@@ -9,12 +9,12 @@ bool record_exists(const char *filename, int lines_per_record, const char *key)
         return false;
 
     char line[100];
-    int line_no = 0;
+    int line_number = 0;
     bool found = false;
 
     while (fgets(line, sizeof(line), fptr) != NULL)
     {
-        if (line_no % lines_per_record == 0)
+        if (line_number % lines_per_record == 0)
         {
             line[strcspn(line, "\n")] = '\0';
             if (strcmp(line, key) == 0)
@@ -23,7 +23,7 @@ bool record_exists(const char *filename, int lines_per_record, const char *key)
                 break;
             }
         }
-        line_no++;
+        line_number++;
     }
     fclose(fptr);
     return found;
@@ -78,11 +78,11 @@ void get_user_details()
                 check_pw_flag = true;
 
                 FILE *fptr = NULL;
-                int attempts = 0;
-                while (fptr == NULL && attempts < 3)
+                int open_attempts = 0;
+                while (fptr == NULL && open_attempts < 3)
                 {
                     fptr = fopen("User_Details.txt", "a");
-                    attempts++;
+                    open_attempts++;
                 }
                 if (fptr != NULL)
                 {
@@ -109,7 +109,6 @@ void get_admin_details()
     char employee_id[50], password[20], confirm_password[20];
     bool check_pw_flag = false;
 
-    
     while (true)
     {
         printf("Enter your employee ID: ");
@@ -135,11 +134,11 @@ void get_admin_details()
             check_pw_flag = true;
 
             FILE *fptr = NULL;
-            int attempts = 0;
-            while (fptr == NULL && attempts < 3)
+            int open_attempts = 0;
+            while (fptr == NULL && open_attempts < 3)
             {
                 fptr = fopen("Admin_Details.txt", "a");
-                attempts++;
+                open_attempts++;
             }
             if (fptr != NULL)
             {
@@ -203,25 +202,28 @@ void user_login()
         return;
     }
 
-    char un[100], fn[100], ln[100], age[100], pw[100];
-    bool found = false;
+    char saved_username[100], saved_first_name[100], saved_last_name[100];
+    char saved_age[100], saved_password[100];
+    bool login_found = false;
 
-    while (fgets(un, sizeof(un), fptr) && fgets(fn, sizeof(fn), fptr) &&
-           fgets(ln, sizeof(ln), fptr) && fgets(age, sizeof(age), fptr) &&
-           fgets(pw, sizeof(pw), fptr))
+    while (fgets(saved_username, sizeof(saved_username), fptr) &&
+           fgets(saved_first_name, sizeof(saved_first_name), fptr) &&
+           fgets(saved_last_name, sizeof(saved_last_name), fptr) &&
+           fgets(saved_age, sizeof(saved_age), fptr) &&
+           fgets(saved_password, sizeof(saved_password), fptr))
     {
-        un[strcspn(un, "\n")] = '\0';
-        pw[strcspn(pw, "\n")] = '\0';
+        saved_username[strcspn(saved_username, "\n")] = '\0';
+        saved_password[strcspn(saved_password, "\n")] = '\0';
 
-        if (strcmp(username, un) == 0 && strcmp(password, pw) == 0)
+        if (strcmp(username, saved_username) == 0 && strcmp(password, saved_password) == 0)
         {
-            found = true;
+            login_found = true;
             break;
         }
     }
     fclose(fptr);
 
-    if (found)
+    if (login_found)
         printf("Login Successful\n");
     else
         printf("Login failed\n");
@@ -242,23 +244,24 @@ void admin_login()
         return;
     }
 
-    char id[100], pw[100];
-    bool found = false;
+    char saved_employee_id[100], saved_password[100];
+    bool login_found = false;
 
-    while (fgets(id, sizeof(id), fptr) && fgets(pw, sizeof(pw), fptr))
+    while (fgets(saved_employee_id, sizeof(saved_employee_id), fptr) &&
+           fgets(saved_password, sizeof(saved_password), fptr))
     {
-        id[strcspn(id, "\n")] = '\0';
-        pw[strcspn(pw, "\n")] = '\0';
+        saved_employee_id[strcspn(saved_employee_id, "\n")] = '\0';
+        saved_password[strcspn(saved_password, "\n")] = '\0';
 
-        if (strcmp(employee_id, id) == 0 && strcmp(password, pw) == 0)
+        if (strcmp(employee_id, saved_employee_id) == 0 && strcmp(password, saved_password) == 0)
         {
-            found = true;
+            login_found = true;
             break;
         }
     }
     fclose(fptr);
 
-    if (found)
+    if (login_found)
         printf("Login Successful\n");
     else
         printf("Login failed\n");
