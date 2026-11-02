@@ -2,6 +2,25 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define MAX_LOGIN_ATTEMPTS 3
+
+static void clear_input(void)
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+}
+
+static bool read_int(int *out)
+{
+    if (scanf(" %d", out) != 1)
+    {
+        clear_input();
+        return false;
+    }
+    return true;
+}
+
 bool record_exists(const char *filename, int lines_per_record, const char *key)
 {
     FILE *fptr = fopen(filename, "r");
@@ -29,6 +48,48 @@ bool record_exists(const char *filename, int lines_per_record, const char *key)
     return found;
 }
 
+static bool check_credentials(const char *filename, int lines_per_record,
+                              int password_index, const char *id, const char *password)
+{
+    FILE *fptr = fopen(filename, "r");
+    if (fptr == NULL)
+        return false;
+
+    char line[100];
+    int line_number = 0;
+    bool id_matches = false;
+    bool ok = false;
+
+    while (fgets(line, sizeof(line), fptr) != NULL)
+    {
+        line[strcspn(line, "\n")] = '\0';
+        int pos = line_number % lines_per_record;
+
+        if (pos == 0)
+            id_matches = (strcmp(line, id) == 0);
+        else if (pos == password_index && id_matches && strcmp(line, password) == 0)
+        {
+            ok = true;
+            break;
+        }
+        line_number++;
+    }
+    fclose(fptr);
+    return ok;
+}
+
+static FILE *open_for_append(const char *filename)
+{
+    FILE *fptr = NULL;
+    int open_attempts = 0;
+    while (fptr == NULL && open_attempts < 3)
+    {
+        fptr = fopen(filename, "a");
+        open_attempts++;
+    }
+    return fptr;
+}
+
 void get_user_details()
 {
     char username[50], first_name[50], last_name[50], password[20], confirm_password[20];
@@ -36,12 +97,16 @@ void get_user_details()
     bool check_pw_flag = false;
 
     printf("Enter your first name: ");
-    scanf("%s", first_name);
+    scanf("%49s", first_name);
     printf("Enter your last name: ");
-    scanf("%s", last_name);
+    scanf("%49s", last_name);
 
     printf("Enter your age: ");
-    scanf(" %i", &age);
+    if (!read_int(&age))
+    {
+        printf("Error! Invalid age\n");
+        return;
+    }
 
     if (age < 18)
     {
@@ -49,14 +114,14 @@ void get_user_details()
     }
     else if (age > 130)
     {
-        printf("Error!");
+        printf("Error!\n");
     }
     else
     {
         while (true)
         {
             printf("Choose a username: ");
-            scanf("%s", username);
+            scanf("%49s", username);
 
             if (record_exists("User_Details.txt", 5, username))
                 printf("Username already taken, try another\n");
@@ -67,27 +132,20 @@ void get_user_details()
         while (check_pw_flag == false)
         {
             printf("Create a password: ");
-            scanf("%s", password);
+            scanf("%19s", password);
 
             printf("Confirm your password: ");
-            scanf("%s", confirm_password);
+            scanf("%19s", confirm_password);
 
             if (strcmp(password, confirm_password) == 0)
             {
                 printf("Passwords match\n");
                 check_pw_flag = true;
 
-                FILE *fptr = NULL;
-                int open_attempts = 0;
-                while (fptr == NULL && open_attempts < 3)
-                {
-                    fptr = fopen("User_Details.txt", "a");
-                    open_attempts++;
-                }
+                FILE *fptr = open_for_append("User_Details.txt");
                 if (fptr != NULL)
                 {
                     printf("The file is opened\n");
-                    // put encryption here
                     fprintf(fptr, "%s\n%s\n%s\n%i\n%s\n", username, first_name, last_name, age, password);
                     fclose(fptr);
                 }
@@ -112,7 +170,7 @@ void get_admin_details()
     while (true)
     {
         printf("Enter your employee ID: ");
-        scanf("%s", employee_id);
+        scanf("%49s", employee_id);
 
         if (record_exists("Admin_Details.txt", 2, employee_id))
             printf("Employee ID already registered\n");
@@ -123,27 +181,20 @@ void get_admin_details()
     while (check_pw_flag == false)
     {
         printf("Create a password: ");
-        scanf("%s", password);
+        scanf("%19s", password);
 
         printf("Confirm your password: ");
-        scanf("%s", confirm_password);
+        scanf("%19s", confirm_password);
 
         if (strcmp(password, confirm_password) == 0)
         {
             printf("Passwords match\n");
             check_pw_flag = true;
 
-            FILE *fptr = NULL;
-            int open_attempts = 0;
-            while (fptr == NULL && open_attempts < 3)
-            {
-                fptr = fopen("Admin_Details.txt", "a");
-                open_attempts++;
-            }
+            FILE *fptr = open_for_append("Admin_Details.txt");
             if (fptr != NULL)
             {
                 printf("The file is opened\n");
-                // put encryption here
                 fprintf(fptr, "%s\n%s\n", employee_id, password);
                 fclose(fptr);
             }
@@ -167,15 +218,15 @@ void create_user_account()
     while (acc_flag == false)
     {
         printf("Enter your preferred account type:\n1.Current\n2.Savings\n");
-        scanf(" %i", &acc_choice);
+        if (!read_int(&acc_choice))
+        {
+            printf("Error! Invalid Input\n");
+            continue;
+        }
 
         switch (acc_choice)
         {
         case 1:
-            acc_flag = true;
-            get_user_details();
-            break;
-
         case 2:
             acc_flag = true;
             get_user_details();
@@ -190,10 +241,6 @@ void create_user_account()
 void user_login()
 {
     char username[50], password[20];
-    printf("Enter your username: ");
-    scanf("%s", username);
-    printf("Enter your password: ");
-    scanf("%s", password);
 
     FILE *fptr = fopen("User_Details.txt", "r");
     if (fptr == NULL)
@@ -201,41 +248,32 @@ void user_login()
         printf("No accounts found\n");
         return;
     }
-
-    char saved_username[100], saved_first_name[100], saved_last_name[100];
-    char saved_age[100], saved_password[100];
-    bool login_found = false;
-
-    while (fgets(saved_username, sizeof(saved_username), fptr) &&
-           fgets(saved_first_name, sizeof(saved_first_name), fptr) &&
-           fgets(saved_last_name, sizeof(saved_last_name), fptr) &&
-           fgets(saved_age, sizeof(saved_age), fptr) &&
-           fgets(saved_password, sizeof(saved_password), fptr))
-    {
-        saved_username[strcspn(saved_username, "\n")] = '\0';
-        saved_password[strcspn(saved_password, "\n")] = '\0';
-
-        if (strcmp(username, saved_username) == 0 && strcmp(password, saved_password) == 0)
-        {
-            login_found = true;
-            break;
-        }
-    }
     fclose(fptr);
 
-    if (login_found)
-        printf("Login Successful\n");
-    else
-        printf("Login failed\n");
+    printf("Enter your username: ");
+    scanf("%49s", username);
+
+    for (int attempt = 1; attempt <= MAX_LOGIN_ATTEMPTS; attempt++)
+    {
+        printf("Enter your password: ");
+        scanf("%19s", password);
+
+        if (check_credentials("User_Details.txt", 5, 4, username, password))
+        {
+            printf("Login Successful\n");
+            return;
+        }
+
+        if (attempt < MAX_LOGIN_ATTEMPTS)
+            printf("Login failed. (%i Attempts left) Please try again.\n",
+                   MAX_LOGIN_ATTEMPTS - attempt);
+    }
+    printf("Login failed\n");
 }
 
 void admin_login()
 {
     char employee_id[50], password[20];
-    printf("Enter your employee ID: ");
-    scanf("%s", employee_id);
-    printf("Enter your password: ");
-    scanf("%s", password);
 
     FILE *fptr = fopen("Admin_Details.txt", "r");
     if (fptr == NULL)
@@ -243,28 +281,27 @@ void admin_login()
         printf("No admin accounts found\n");
         return;
     }
-
-    char saved_employee_id[100], saved_password[100];
-    bool login_found = false;
-
-    while (fgets(saved_employee_id, sizeof(saved_employee_id), fptr) &&
-           fgets(saved_password, sizeof(saved_password), fptr))
-    {
-        saved_employee_id[strcspn(saved_employee_id, "\n")] = '\0';
-        saved_password[strcspn(saved_password, "\n")] = '\0';
-
-        if (strcmp(employee_id, saved_employee_id) == 0 && strcmp(password, saved_password) == 0)
-        {
-            login_found = true;
-            break;
-        }
-    }
     fclose(fptr);
 
-    if (login_found)
-        printf("Login Successful\n");
-    else
-        printf("Login failed\n");
+    printf("Enter your employee ID: ");
+    scanf("%49s", employee_id);
+
+    for (int attempt = 1; attempt <= MAX_LOGIN_ATTEMPTS; attempt++)
+    {
+        printf("Enter your password: ");
+        scanf("%19s", password);
+
+        if (check_credentials("Admin_Details.txt", 2, 1, employee_id, password))
+        {
+            printf("Login Successful\n");
+            return;
+        }
+
+        if (attempt < MAX_LOGIN_ATTEMPTS)
+            printf("Login failed. (%i Attempts left) Please try again.\n",
+                   MAX_LOGIN_ATTEMPTS - attempt);
+    }
+    printf("Login failed\n");
 }
 
 int main(void)
@@ -275,16 +312,18 @@ int main(void)
     while (flag == false)
     {
         printf("1.Create User Account\n2.Create Admin Account\n3.User Login\n4.Admin Login\n5.Exit\n");
-        scanf(" %i", &choice);
+        if (!read_int(&choice))
+        {
+            printf("Error! Invalid Input\n");
+            continue;
+        }
 
         switch (choice)
         {
         case 1:
-            flag = true;
             create_user_account();
             break;
         case 2:
-            flag = true;
             get_admin_details();
             break;
         case 3:
@@ -299,6 +338,8 @@ int main(void)
             printf("Exited\n");
             flag = true;
             break;
+        default:
+            printf("Error! Invalid Input\n");
         }
     }
     return 0;
