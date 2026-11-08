@@ -101,7 +101,6 @@ bank-account-management-system/
 └── README.md
 ```
 
-> Update this to match your actual file layout. A single-file project works too.
 
 ---
 
